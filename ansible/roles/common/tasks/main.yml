@@ -1,0 +1,53 @@
+---
+# This playbook contains common plays that will be run on all nodes.
+
+- name: Install ntp
+  yum: name=ntp state=present
+  tags: ntp
+
+- name: Configure ntp file
+  template: src=ntp.conf.j2 dest=/etc/ntp.conf
+  tags: ntp
+  notify: restart ntp
+
+- name: Start the ntp service
+  service: name=ntpd state=started enabled=yes
+  tags: ntp
+
+- name: hosts file
+  template: src=hosts.j2 dest=/etc/hosts
+
+- name: hostname
+  hostname: name={{inventory_hostname}}
+
+- name: docker
+  yum: name=docker state=latest
+
+- name: daemon.json
+  template: src=daemon.j2 dest=/etc/docker/daemon.json
+
+- name: daemon-reload
+  command: systemctl daemon-reload
+
+- name: service
+  service: name=docker enabled=yes state=restarted
+
+- name: kube yum repo
+  template: src=repo.j2 dest=/etc/yum.repos.d/virt7-docker-common-release.repo
+
+- name: install kube
+  yum: name=kubernetes,etcd,flannel state=latest
+
+- name: kube config
+  lineinfile: dest=/etc/kubernetes/config backrefs=yes regexp='^(KUBE_MASTER=).*' line='\1"--master=http://kube0:8080"'
+
+- name: disable selinux
+  selinux: state=disabled
+  notify: reboot
+
+- name: stop firewall
+  service: name=firewalld enabled=no
+
+- name: disable iptables
+  shell: if rpm -q iptables-services|grep -v 'not installed'; then systemctl disable iptables-services; fi
+
