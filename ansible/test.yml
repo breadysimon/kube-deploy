@@ -1,0 +1,7 @@
+---
+- hosts: kube1
+  tasks:
+  - name: https proxy
+    lineinfile : dest=/etc/profile backrefs=yes regexp="^(export https_proxy)=" line="\1=https://{{proxyserver}}:{{proxyport}}"
+
+

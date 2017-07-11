@@ -10,6 +10,10 @@
 - name: yum proxy
   lineinfile : dest=/etc/yum.conf backrefs=yes regexp="^(proxy)=" line="\1=http://{{proxyserver}}:{{proxyport}}"
 
+- name: docker proxy
+  template: src=docker-proxy.j2 dest=/etc/systemd/system/docker.service.d/http-proxy.conf
+  notify: daemon-reload
+
 - name: Install ntp
   yum: name=ntp state=present
   tags: ntp
@@ -34,10 +38,6 @@
 
 - name: daemon.json
   template: src=daemon.j2 dest=/etc/docker/daemon.json
-  notify: daemon-reload
-
-- name: docker proxy
-  template: src=docker-proxy.j2 dest=/etc/systemd/system/docker.service.d/http-proxy.conf
   notify: daemon-reload
 
 - name: service

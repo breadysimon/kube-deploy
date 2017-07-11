@@ -1,3 +1,5 @@
 ---
 # Variables listed here are applicable to all host groups
 ntpserver: 192.168.1.2
+proxyserver: 10.15.206.30
+proxyport: 8080
